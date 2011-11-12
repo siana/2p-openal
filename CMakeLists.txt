@@ -143,13 +143,13 @@ ELSE()
         ADD_DEFINITIONS(-Werror)
     ENDIF()
 
-    SET(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O2 -D_DEBUG" CACHE STRING
+    SET(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O3 -D_DEBUG" CACHE STRING
         "Flags used by the compiler during Release with Debug Info builds."
         FORCE)
     SET(CMAKE_C_FLAGS_MINSIZEREL "-Os -DNDEBUG" CACHE STRING
         "Flags used by the compiler during release minsize builds."
         FORCE)
-    SET(CMAKE_C_FLAGS_RELEASE "-O2 -fomit-frame-pointer -DNDEBUG" CACHE STRING
+    SET(CMAKE_C_FLAGS_RELEASE "-O3 -fomit-frame-pointer -DNDEBUG" CACHE STRING
         "Flags used by the compiler during release builds"
         FORCE)
     SET(CMAKE_C_FLAGS_DEBUG "-g3 -D_DEBUG" CACHE STRING
