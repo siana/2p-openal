@@ -42,11 +42,11 @@
 
 #define EmptyFuncs { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 static struct BackendInfo BackendList[] = {
-#ifdef HAVE_PULSEAUDIO
-    { "pulse", alc_pulse_init, alc_pulse_deinit, alc_pulse_probe, EmptyFuncs },
-#endif
 #ifdef HAVE_ALSA
     { "alsa", alc_alsa_init, alc_alsa_deinit, alc_alsa_probe, EmptyFuncs },
+#endif
+#ifdef HAVE_PULSEAUDIO
+    { "pulse", alc_pulse_init, alc_pulse_deinit, alc_pulse_probe, EmptyFuncs },
 #endif
 #ifdef HAVE_COREAUDIO
     { "core", alc_ca_init, alc_ca_deinit, alc_ca_probe, EmptyFuncs },
