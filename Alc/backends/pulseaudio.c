@@ -701,6 +701,13 @@ static pa_stream *connect_playback_stream(ALCdevice *device,
 
     pa_stream_set_state_callback(stream, stream_state_callback, data->loop);
 
+    AL_PRINT("Attempting flags 0x%x\n", flags);
+    if (attr)
+    {
+        AL_PRINT("maxlength: %d tlegth: %d prebuf: %d minreq: %d fragsize: %d\n",
+           attr->maxlength, attr->tlength, attr->prebuf, attr->minreq, attr->fragsize);
+    }
+
     if(pa_stream_connect_playback(stream, data->device_name, attr, flags, NULL, NULL) < 0)
     {
         ERR("Stream did not connect: %s\n",
@@ -1017,13 +1024,14 @@ static ALCboolean pulse_reset_playback(ALCdevice *device) //{{{
     pa_stream_set_underflow_callback(data->stream, stream_signal_callback, device);
 
     data->attr = *(pa_stream_get_buffer_attr(data->stream));
+    ERR("PulseAudio returned minreq=%d, tlength=%d\n", data->attr.minreq, data->attr.tlength);
     device->UpdateSize = data->attr.minreq / data->frame_size;
     device->NumUpdates = (data->attr.tlength/data->frame_size) / device->UpdateSize;
-    if(device->NumUpdates <= 1)
+    while(device->NumUpdates <= 2)
     {
         pa_operation *o;
 
-        ERR("PulseAudio returned minreq=%d, tlength=%d; expect lag or break up\n", data->attr.minreq, data->attr.tlength);
+        ERR("minreq too high - expect lag or break up\n");
 
         /* Server gave a comparatively large minreq, so modify the tlength. */
         device->NumUpdates = 2;
@@ -1031,10 +1039,17 @@ static ALCboolean pulse_reset_playback(ALCdevice *device) //{{{
 
         o = pa_stream_set_buffer_attr(data->stream, &data->attr,
                                       stream_success_callback, device);
+
         while(pa_operation_get_state(o) == PA_OPERATION_RUNNING)
             pa_threaded_mainloop_wait(data->loop);
         pa_operation_unref(o);
+
+        data->attr = *(pa_stream_get_buffer_attr(data->stream));
+        ERR("PulseAudio returned minreq=%d, tlength=%d", data->attr.minreq, data->attr.tlength);
+        device->UpdateSize = data->attr.minreq / data->frame_size;
+        device->NumUpdates = (data->attr.tlength/data->frame_size) / device->UpdateSize;
     }
+
 
     data->thread = StartThread(PulseProc, device);
     if(!data->thread)
